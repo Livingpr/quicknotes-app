@@ -10,9 +10,16 @@ const searchInput = document.querySelector("#search-input");
 // ---------- 2. Data ----------
 let notes = [];
 
-// ---------- 3. Render ----------
+// ---------- 3. Count message ----------
+function countMessage() {
+  if (notes.length === 0) return "You have no notes yet.";
+  if (notes.length === 1) return "You have 1 note.";
+  return `You have ${notes.length} notes.`;
+}
+
+// ---------- 4. Render ----------
 function render() {
-  list.innerHTML = ""; // safe: no user text
+  list.innerHTML = ""; // safe: contains no user text
 
   notes.forEach((note) => {
     const li = document.createElement("li");
@@ -35,14 +42,17 @@ function render() {
     const del = document.createElement("button");
     del.textContent = "Delete";
     del.classList.add("delete-btn");
+    del.addEventListener("click", () => deleteNote(note.id));
 
     li.appendChild(info);
     li.appendChild(del);
     list.appendChild(li);
   });
+
+  count.textContent = countMessage();
 }
 
-// ---------- 4. Add ----------
+// ---------- 5. Add and delete ----------
 function addNote(text, category) {
   notes.push({
     id: Date.now(),
@@ -53,13 +63,30 @@ function addNote(text, category) {
   render();
 }
 
-// ---------- 5. Events ----------
+function deleteNote(id) {
+  notes = notes.filter((note) => note.id !== id);
+  render();
+}
+
+// ---------- 6. Events ----------
 form.addEventListener("submit", (event) => {
   event.preventDefault();
   const text = input.value.trim();
+
+  if (text === "") {
+    errorMessage.textContent = "Please type a note first.";
+    return;
+  }
+  if (text.length > 200) {
+    errorMessage.textContent = "Notes must be 200 characters or fewer.";
+    return;
+  }
+
+  errorMessage.textContent = "";
   addNote(text, categorySelect.value);
   input.value = "";
   input.focus();
 });
 
+// ---------- 7. First draw ----------
 render();
