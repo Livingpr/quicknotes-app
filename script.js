@@ -117,3 +117,14 @@ searchInput.addEventListener("input", render);
 
 // ---------- 7. First draw ----------
 render();
+
+// ---------- 8. Bonus: clear all ----------
+const clearAllBtn = document.querySelector("#clear-all");
+
+clearAllBtn.addEventListener("click", () => {
+  if (notes.length > 0 && confirm("Delete all notes?")) {
+    notes = [];
+    saveNotes();
+    render();
+  }
+});
