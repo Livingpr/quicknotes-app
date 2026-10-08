@@ -7,8 +7,19 @@ const count = document.querySelector("#note-count");
 const errorMessage = document.querySelector("#error-message");
 const searchInput = document.querySelector("#search-input");
 
-// ---------- 2. Data ----------
-let notes = [];
+// ---------- 2. Storage and data ----------
+const STORAGE_KEY = "quicknotes";
+
+function loadNotes() {
+  const saved = localStorage.getItem(STORAGE_KEY);
+  return saved ? JSON.parse(saved) : [];
+}
+
+function saveNotes() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(notes));
+}
+
+let notes = loadNotes();
 
 // ---------- 3. Count message ----------
 function countMessage() {
@@ -17,11 +28,23 @@ function countMessage() {
   return `You have ${notes.length} notes.`;
 }
 
-// ---------- 4. Render ----------
+// ---------- 4. Render (with search filter) ----------
 function render() {
   list.innerHTML = ""; // safe: contains no user text
 
-  notes.forEach((note) => {
+  const term = searchInput.value.trim().toLowerCase();
+  const visible = notes.filter((note) =>
+    note.text.toLowerCase().includes(term)
+  );
+
+  if (visible.length === 0 && term !== "") {
+    const empty = document.createElement("li");
+    empty.classList.add("empty");
+    empty.textContent = "No notes match your search.";
+    list.appendChild(empty);
+  }
+
+  visible.forEach((note) => {
     const li = document.createElement("li");
     li.classList.add("note", `category-${note.category}`);
 
@@ -60,11 +83,13 @@ function addNote(text, category) {
     category: category,
     createdAt: new Date().toLocaleString(),
   });
+  saveNotes();
   render();
 }
 
 function deleteNote(id) {
   notes = notes.filter((note) => note.id !== id);
+  saveNotes();
   render();
 }
 
@@ -87,6 +112,8 @@ form.addEventListener("submit", (event) => {
   input.value = "";
   input.focus();
 });
+
+searchInput.addEventListener("input", render);
 
 // ---------- 7. First draw ----------
 render();
